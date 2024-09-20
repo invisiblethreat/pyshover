@@ -1,0 +1,7 @@
+*.pyc
+*.swp
+.cache/*
+build/**
+dist/**
+pyproject.toml
+pyshover.egg-info/**

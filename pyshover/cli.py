@@ -16,6 +16,10 @@ ERR = 1
 
 
 def main():
+    """
+    Ingest CLI arguments and send a message using the Pushover API.
+    """
+
     parser = argparse.ArgumentParser(
         description="Send notifications using Pushover API", epilog=""
     )
@@ -62,10 +66,10 @@ def main():
         )
 
         response = pushover.send()
-        log.info(f"Message sent successfully. Response: {response}")
+        log.info("Message sent successfully. Response: %s", response)
 
     except PushoverException as e:
-        log.error(f"Error sending message: {e}")
+        log.error("Error sending message: %s", e)
         sys.exit(ERR)
 
 

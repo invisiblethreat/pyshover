@@ -1,8 +1,15 @@
-#!/usr/bin/env python
+"""
+Pushover API client for sending messages to users.
+This module provides a simple interface to send messages using the Pushover API.
+It allows you to create messages, set user tokens, and send notifications.
+The Pushover API documentation can be found at: https://pushover.net/apii
+"""
+
 import json
 import logging
 import os
 from http.client import HTTPSConnection
+from typing import Any, Dict, List
 from urllib.parse import urlencode
 
 logging.basicConfig(
@@ -28,21 +35,21 @@ class PushoverMessage:
     Used for storing message specific data.
     """
 
-    def __init__(self, message):
+    def __init__(self, message: str):
         """
         Creates a PushoverMessage object.
         """
         self.vars = {}
         self.vars["message"] = message
 
-    def set(self, key, value):
+    def set(self, key: str, value: Any):
         """
         Sets the value of a field "key" to the value of "value".
         """
         if value is not None:
             self.vars[key] = value
 
-    def get(self):
+    def get(self) -> Dict[str, Any]:
         """
         Returns a dictionary with the values for the specified message.
         """
@@ -50,7 +57,8 @@ class PushoverMessage:
 
     def user(self, user_token=None, user_device=None):
         """
-        Sets a single user to be the recipient of this message with token "user_token" and device "user_device".
+        Sets a single user to be the recipient of this message with token
+        "user_token" and device "user_device".
         """
 
         self.set("user", user_token)
@@ -96,7 +104,7 @@ class Pushover:
             # attempt to use environment variables if no token is provided.
             app_token = os.getenv("PUSHOVER_APP_TOKEN")
             if app_token is not None:
-                log.info(f"found a value in PUSHOVER_APP_TOKEN to use")
+                log.info("found a value in PUSHOVER_APP_TOKEN to use")
 
         if app_token is None:
             raise PushoverException("No token supplied.")
@@ -106,7 +114,7 @@ class Pushover:
             # attempt to use environment variables if no token is provided.
             user_token = os.getenv("PUSHOVER_USER_TOKEN")
             if user_token is not None:
-                log.info(f"found a value in PUSHOVER_USER_TOKEN to use")
+                log.info("found a value in PUSHOVER_USER_TOKEN to use")
 
         if app_token is None:
             raise PushoverException("No app_token supplied.")
@@ -116,11 +124,11 @@ class Pushover:
             # attempt to use environment variables if no token is provided.
             device_token = os.getenv("PUSHOVER_DEVICE_TOKEN")
             if device_token is not None:
-                log.info(f"found a value in PUSHOVER_DEVICE_TOKEN to use")
+                log.info("found a value in PUSHOVER_DEVICE_TOKEN to use")
 
         self.app_token = app_token
         self.user_token = user_token
-        self.user_device = None
+        self.user_device = device_token
 
         if message is not None:
             pom = PushoverMessage(message)
@@ -129,18 +137,17 @@ class Pushover:
 
             self.messages = [pom]
 
-    def msg(self, message):
+    def msg(self, message: str) -> PushoverMessage:
         """
         Creates a PushoverMessage object. Takes one "message" parameter (the message to be sent).
         Returns with PushoverMessage object (msg).
         """
 
-        message = PushoverMessage(message)
-        self.messages.append(message)
-        return message
+        po_message = PushoverMessage(message)
+        self.messages.append(po_message)
+        return po_message
 
-
-    def send(self):
+    def send(self) -> List[bool]:
         """
         Sends all PushoverMessage's owned by the Pushover object.
         """
@@ -169,7 +176,7 @@ class Pushover:
         assert "message" in kwargs
         assert self.app_token is not None
 
-        if not "user" in kwargs:
+        if "user" not in kwargs:
             if self.user is not None:
                 kwargs["user"] = self.user_token
                 if self.user_device is not None:
@@ -185,5 +192,5 @@ class Pushover:
 
         if data["status"] != 1:
             raise PushoverException(output)
-        else:
-            return True
+
+        return True
